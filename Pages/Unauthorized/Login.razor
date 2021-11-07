@@ -1,0 +1,161 @@
+﻿@page "/Login"
+
+<div class="form">
+    <div class="form-container">
+        <div class="form-form">
+            <div class="form-form-wrap">
+                <div class="form-container">
+                    <div class="form-content">
+
+                        <h1 class="">Giriş Yap <a href="javascript:;"><span class="brand-name">ASKI</span></a></h1>
+                        <p class="signup-link">Sen de katılmak ister misin? <a href="auth_register.html">Hesap oluştur!</a></p>
+                        <EditForm Model="@_MerchantLogin" OnValidSubmit="LoginRequest" class="text-left">
+                            <div class="form">
+
+                                <div id="username-field" class="field-wrapper input">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                    <input id="username" @bind-value="_MerchantLogin.Account" name="username" type="text" class="form-control" placeholder="Kullanıcı Adı">
+                                </div>
+
+                                <div id="password-field" class="field-wrapper input mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-lock"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    <input id="password" @bind-value="_MerchantLogin.Password" name="password" type="password" class="form-control" placeholder="Parola">
+                                </div>
+                                <div class="d-sm-flex justify-content-between">
+                                    <div class="field-wrapper toggle-pass">
+                                        <p class="d-inline-block">Parolayı Göster</p>
+                                        <label class="switch s-primary">
+                                            <input type="checkbox" id="toggle-password" class="d-none">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="field-wrapper">
+                                        <button @onclick="LoginRequest" class="btn btn-primary" value="">Giriş Yap</button>
+                                    </div>
+
+                                </div>
+
+                                <div class="field-wrapper text-center keep-logged-in">
+                                    <div class="n-chk new-checkbox checkbox-outline-primary">
+                                        <label class="new-control new-checkbox checkbox-outline-primary">
+                                            <input type="checkbox" class="new-control-input">
+                                            <span class="new-control-indicator"></span>Beni Hatırla
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="field-wrapper">
+                                    <a href="auth_pass_recovery.html" class="forgot-pass-link">Şifremi Unuttum?</a>
+                                </div>
+                            </div>
+                        </EditForm>
+                        <p class="terms-conditions">© 2021 Tüm Hakları Saklıdır. <a href="index-2.html">ASKI</a> bir Intranet Technology şirketinin ürünüdür. <a href="javascript:void(0);">Çerez Politikası</a>, <a href="javascript:void(0);">Gizlilik</a>, ve <a href="javascript:void(0);">Sözleşmeler</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-image">
+            <div class="l-image">
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private MerchantLogin _MerchantLogin = new MerchantLogin();
+
+    private bool isAuth = true;
+
+    private bool isLoggingIn = false;
+
+    [Inject]
+    IJSRuntime _JsRuntime { get; set; }
+
+    [Inject]
+    HttpClient _HttpClient { get; set; }
+
+    [Inject]
+    NavigationManager _NavigationManager { get; set; }
+
+    [Inject]
+    IToastService _ToastService { get; set; }
+
+    [Inject]
+    ILocalStorageService _LocalStorageService { get; set; }
+
+    [Inject]
+    AuthenticationStateProvider _AuthenticationStateProvider { get; set; }
+
+    private async Task LoginRequest()
+    {
+        try
+        {
+            // Open Logging
+            isLoggingIn = true;
+            //
+            if (String.IsNullOrEmpty(_MerchantLogin.Account))
+            {
+                _ToastService.ShowWarning("Lütfen kullanıcı adınızı giriniz", "Eksik Bilgi");
+                isLoggingIn = false;
+                return;
+            }
+            else if (String.IsNullOrEmpty(_MerchantLogin.Password))
+            {
+                _ToastService.ShowWarning("Lütfen parolanızı giriniz", "Eksik Bilgi");
+                isLoggingIn = false;
+                return;
+            }
+
+            askidatalayer.Entity.DataModels.AskiUser AskiUser = askidatalayer.Functions.DatabaseHelper.GetAskiUser(_MerchantLogin.Account);
+            // Close loading
+            isLoggingIn = false;
+            //
+            if (AskiUser != null)
+            {
+                var IsAuth = AskiUser.Authenticate(_MerchantLogin.Password);
+                if (IsAuth)
+                {
+                    // Token Parse
+                    var token = Helpers.WebAppHelper.TokenGenerate(AskiUser.Account, Convert.ToString((int)askidatalayer.Models.Enums.UserAccessLevel.AskiSuperAdmin), Constants.SecretKey, "", "", "", AskiUser.Id.ToString(), DateTime.Now.AddHours(2));
+                    #region AddTokenToDatabase
+                    askidatalayer.Entity.DataModels.UIToken uiToken = new askidatalayer.Entity.DataModels.UIToken()
+                    {
+                        Token = token,
+                        ExpiresOn = DateTime.Now.AddHours(2),
+                        UserAgent = "",
+                        UserId = AskiUser.Id,
+                        UserRole = (int)askidatalayer.Models.Enums.UserAccessLevel.AskiUser
+                    };
+                    int TokenId = askidatalayer.Functions.DatabaseHelper.AddUITokens(uiToken);
+                    #endregion
+
+                    if (TokenId > 0)
+                    {
+                        // Storage Token
+                        await _LocalStorageService.SetItemAsStringAsync(Constants.StorageVariables.Token, token);
+                        await _LocalStorageService.SetItemAsStringAsync(Constants.StorageVariables.LoggedAccount, _MerchantLogin.Account);
+                        // Trigger Auth Layer
+                        (_AuthenticationStateProvider as AuthStateProvider).TriggerWhenLogIn(_MerchantLogin.Account);
+                        // Correct Login
+                        _NavigationManager.NavigateTo("/Companies");
+                    }
+                    else
+                    {
+                        _ToastService.ShowError("Başarısız giriş. Lütfen bilgilerinizi kontrol ediniz.", "Hata");
+                    }
+                }
+                else
+                {
+                    _ToastService.ShowError("Başarısız giriş. Lütfen bilgilerinizi kontrol ediniz.", "Hata");
+                }
+            }
+            else
+            {
+                _ToastService.ShowError("Başarısız giriş. Lütfen bilgilerinizi kontrol ediniz.", "Hata");
+            }
+        }
+        catch (Exception e) { isLoggingIn = false; askilogiclayer.Helpers.SecuriLogger.LogError("Login Request", "Occured an exception. Message = " + e.Message); _ToastService.ShowError("Beklenmedik bir hata üredi. İlgili hata destek ekibimize iletilmiştir. En kısa sürede çözümü sağlanacaktır.", "Hata"); }
+    }
+
+}

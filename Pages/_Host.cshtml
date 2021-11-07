@@ -1,0 +1,68 @@
+﻿@page "/"
+@namespace askiapp.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="~/" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <title>Yönetim Paneli - ASKI</title>
+    <link rel="icon" type="image/x-icon" href="assets/img/aski/favicon.ico" />
+    <link href="assets/css/loader.css" rel="stylesheet" type="text/css" />
+    <!-- Public CSSs -->
+    <link href="https://fonts.googleapis.com/css?family=Quicksand:400,500,600,700&amp;display=swap" rel="stylesheet">
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/plugins.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/structure.css" rel="stylesheet" type="text/css" class="structure" />
+    <link href="assets/css/authentication/form-1.css" rel="stylesheet" type="text/css" />
+    <!-- Dashboard -->
+    <link href="plugins/apex/apexcharts.css" rel="stylesheet" type="text/css">
+    <link href="assets/css/dashboard/dash_1.css" rel="stylesheet" type="text/css" class="dashboard-analytics" />
+    <!-- Forms -->
+    <link rel="stylesheet" type="text/css" href="assets/css/forms/theme-checkbox-radio.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/forms/switches.css">
+</head>
+<body>
+    <app>
+        <component type="typeof(App)" render-mode="ServerPrerendered" />
+    </app>
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+
+    <!-- Public Scripts -->
+    <script type="text/javascript" src="assets/js/libs/jquery-3.1.1.min.js"></script>
+    @*<script type="text/javascript" src="bootstrap/js/popper.min.js"></script>*@
+    <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="plugins/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script type="text/javascript" src="assets/js/app.js"></script>
+
+    <script type="text/javascript" src="assets/js/custom.js"></script>
+    <!-- Dashboard -->
+    <script type="text/javascript" src="plugins/apex/apexcharts.min.js"></script>
+    @*<script type="text/javascript" src="assets/js/dashboard/dash_1.js"></script>*@
+    <!-- Login -->
+    <script type="text/javascript" src="assets/js/authentication/form-1.js"></script>
+    <!-- Loader -->
+    @*<script type="text/javascript" src="assets/js/loader.js"></script>*@
+    <!-- Blazor Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            //Blazor.start().then(() => {
+            //    console.log(App);
+            //    App.init();
+            //});
+        });
+    </script>
+    <script type="text/javascript">
+        //$(document).ready(function () {
+        //    console.log(App);
+        //    App.init();
+        //});
+    </script>
+</body>
+</html>
